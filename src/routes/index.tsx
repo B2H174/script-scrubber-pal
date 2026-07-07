@@ -4,13 +4,13 @@ import { useState } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CodeFix — AI Code Repair" },
+      { title: "2t Fix — AI Code Repair" },
       {
         name: "description",
         content:
           "Paste broken code and get a clean, fixed version instantly. Powered by AI.",
       },
-      { property: "og:title", content: "CodeFix — AI Code Repair" },
+      { property: "og:title", content: "2t Fix — AI Code Repair" },
       {
         property: "og:description",
         content: "Paste broken code, get it fixed instantly.",
@@ -97,7 +97,7 @@ function Index() {
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-background font-mono text-sm font-bold">
               {"</>"}
             </div>
-            <span className="text-lg font-semibold tracking-tight">CodeFix</span>
+            <span className="text-lg font-semibold tracking-tight">2t Fix</span>
           </div>
           <a
             href="https://huggingface.co/spaces/mohamedamine2011/ai"
