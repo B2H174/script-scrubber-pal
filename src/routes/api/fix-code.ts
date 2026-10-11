@@ -1,29 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const SPACE = "https://mohamedamine2011-ai.hf.space";
+const MODEL = "gemini-2.5-flash";
 
-async function callModel(message: string): Promise<string> {
-  const r = await fetch(`${SPACE}/gradio_api/call/chat_function`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: [message] }),
-  });
-  if (!r.ok) throw new Error(`Model request failed: ${r.status}`);
-  const { event_id } = (await r.json()) as { event_id: string };
-
-  const stream = await fetch(
-    `${SPACE}/gradio_api/call/chat_function/${event_id}`,
+async function callModel(prompt: string): Promise<string> {
+  const key = process.env.GOOGLE_API_KEY;
+  if (!key) throw new Error("API key is not configured");
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      }),
+    },
   );
-  if (!stream.ok || !stream.body) throw new Error("Stream failed");
-  const text = await stream.text();
-
-  // Parse SSE: find last "data:" line
-  const lines = text.split("\n").filter((l) => l.startsWith("data:"));
-  if (!lines.length) throw new Error("No data returned");
-  const last = lines[lines.length - 1].slice(5).trim();
-  const parsed = JSON.parse(last);
-  const content = Array.isArray(parsed) ? parsed[0] : parsed;
-  return typeof content === "string" ? content : JSON.stringify(content);
+  const data = (await r.json().catch(() => ({}))) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    error?: { message?: string };
+  };
+  if (!r.ok) throw new Error(data.error?.message ?? `Model request failed: ${r.status}`);
+  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("");
+  if (!text) throw new Error("No data returned");
+  return text;
 }
 
 export const Route = createFileRoute("/api/fix-code")({
